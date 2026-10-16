@@ -23,7 +23,7 @@ final readonly class CommitSeriesController
 
         Inertia::flash('committed', [
             'id' => $first->id,
-            'body' => $first->body,
+            'body' => $first->summary(),
             'series_size' => $first->series_size,
         ]);
 

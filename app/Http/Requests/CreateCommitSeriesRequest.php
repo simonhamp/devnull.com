@@ -6,6 +6,8 @@ namespace App\Http\Requests;
 
 use App\Actions\CreateCommitImages;
 use App\Actions\CreateCommitSeries;
+use App\Rules\ValidEmbed;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
@@ -22,13 +24,13 @@ final class CreateCommitSeriesRequest extends FormRequest
     /**
      * Images go with the first part of the series, checked like those of a single commit: by their contents, not their extension, and never SVG.
      *
-     * @return array<string, array<int, string|File|Dimensions>>
+     * @return array<string, array<int, string|ValidationRule|File|Dimensions>>
      */
     public function rules(): array
     {
         return [
             'bodies' => ['required', 'list', 'min:2', 'max:'.CreateCommitSeries::MAX_PARTS],
-            'bodies.*' => ['required', 'string', 'min:3', 'max:280'],
+            'bodies.*' => ['required', 'string', 'min:3', 'max:280', resolve(ValidEmbed::class)],
             'images' => ['nullable', 'list', 'max:'.CreateCommitImages::MAX_IMAGES],
             'images.*' => [
                 'required',

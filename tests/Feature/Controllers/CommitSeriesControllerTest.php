@@ -110,6 +110,42 @@ it('validates every part like a commit and posts nothing when one is invalid', f
     'too long' => [str_repeat('a', 281), 'The commit field must not be greater than 280 characters.'],
 ]);
 
+it('may end any part of a series with an embed', function (): void {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->fromRoute('log.show', Log::Following)
+        ->post(route('commit-series.store'), [
+            'bodies' => ['/embed https://www.example.com/game', "Part two of the story\n/embed https://example.com/video 16:9"],
+        ]);
+
+    $parts = $user->commits()->oldest('series_position')->get();
+
+    expect($parts->pluck('body')->all())->toBe(['', 'Part two of the story'])
+        ->and($parts->pluck('embed_url')->all())->toBe(['https://www.example.com/game', 'https://example.com/video'])
+        ->and($parts->pluck('embed_ratio')->all())->toBe(['1:1', '16:9']);
+
+    $response->assertInertiaFlash('committed', [
+        'id' => $parts[0]->id,
+        'body' => '/embed example.com',
+        'series_size' => 2,
+    ]);
+});
+
+it('validates the embed of every part and posts nothing when one is invalid', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->fromRoute('log.show', Log::Following)
+        ->post(route('commit-series.store'), [
+            'bodies' => ['Part one of the story', 'Part two /embed http://example.com/game'],
+        ])
+        ->assertRedirectToRoute('log.show', Log::Following)
+        ->assertSessionHasErrors(['bodies.1' => 'Only https:// links to other sites can be embedded.']);
+
+    expect(Commit::query()->count())->toBe(0);
+});
+
 it('spends one of the 10 commits a minute on each part', function (): void {
     $user = User::factory()->create();
 
