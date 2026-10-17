@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\NotificationGroupController;
 use App\Http\Controllers\Api\UserCommitController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserFollowController;
+use App\Http\Controllers\Api\UserFollowersController;
+use App\Http\Controllers\Api\UserFollowingController;
 use App\Http\Controllers\Cli\CommitController;
 use App\Http\Controllers\Cli\KeyLookupController;
 use App\Http\Middleware\AuthenticateSignedRequest;
@@ -35,6 +37,10 @@ Route::prefix('v1')->middleware('throttle:api')->group(function (): void {
             ->name('api-user.show');
         Route::get('users/{user:username}/commits', [UserCommitController::class, 'index'])
             ->name('api-user-commit.index');
+        Route::get('users/{user:username}/followers', [UserFollowersController::class, 'index'])
+            ->name('api-user-followers.index');
+        Route::get('users/{user:username}/following', [UserFollowingController::class, 'index'])
+            ->name('api-user-following.index');
         Route::get('commits/{commit}', [ApiCommitController::class, 'show'])
             ->name('api-commit.show');
     });
