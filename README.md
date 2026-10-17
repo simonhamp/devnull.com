@@ -66,6 +66,8 @@ Read-only, no authentication, JSON, versioned under `/api/v1`. Only approved com
 |---|---|
 | `GET /api/v1/users/{username}` | A public profile with commit, follower, and following counts |
 | `GET /api/v1/users/{username}/commits` | The user's top-level commits, newest first, 20 per page (`?replies=1` for their replies instead) |
+| `GET /api/v1/users/{username}/followers` | The people following the user, newest follow first, 30 per page |
+| `GET /api/v1/users/{username}/following` | The people the user follows, newest follow first, 30 per page |
 | `GET /api/v1/commits/{id}` | One commit with its author, public parent id, star and reply counts, link preview (with its `embed` player, if any), and images (`id`, `url`, `width`, `height`) |
 
 Lists are cursor-paginated: follow `links.next` (or pass `meta.next_cursor` as `?cursor=`) until it is `null`.
@@ -82,7 +84,7 @@ The mobile app signs its requests to `/api/v1` with an SSH key it keeps on the d
 
 Commits in a signed response carry what the web's cards show: `preview_segments`, the excerpt a list shows of a long commit (or `null`), the `poll` with the user's view of its votes and each option's `percentage`, the `quoted_commit` (a tombstone once deleted, or `null` when the user may not see it, while `quoted_commit_id` still says a commit was quoted), and in lists the `reply_preview` the web shows under each commit.
 
-A signed profile also says `is_muting` and has the web's `achievements`, with the Unix rank.
+A signed profile also says `is_muting` and has the web's `achievements`, with the Unix rank. In a signed list of followers or following, each person says `is_followed`, whether the user follows them, and `follows_you`.
 
 `GET /api/v1/log/{log}` serves the web's three logs, `following`, `latest` and `trending`, with the same queries and 20 commits a page. Trending is ranked, so it also says `is_ranked` and the `newest_commit_id` when it was loaded. With `?since={id}`, every log counts the `new_commits_count` newer than that commit, and Trending also returns them as `latest_commits`, the way the web offers them above it. An empty Following log comes with a few `suggestions`.
 
